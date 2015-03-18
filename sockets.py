@@ -46,8 +46,9 @@ class World:
 
     def update_listeners(self, entity):
         '''update the set listeners'''
+	data = json.dumps({entity: self.get(entity)})
         for listener in self.listeners:
-            listener(entity, self.get(entity))
+            listener(data)
 
     def clear(self):
         self.space = dict()
@@ -62,6 +63,10 @@ class World:
 class Client:
     def __init__(self):
         self.queue = queue.Queue()
+	self.put(json.dumps(myWorld.world()))
+
+    def __call__(self, msg):
+	self.put(msg)
 
     def get(self):
         return self.queue.get()
@@ -69,19 +74,12 @@ class Client:
     def add(self, val):
         self.queue.put_nowait(val)
 
+    def put(self, v):
+	self.queue.put_nowait(v)
+
 
 myWorld = World()
 clients = list()
-
-
-def set_listener(entity, data):
-    ''' do something with the update ! '''
-    msg = json.dumps({entity: data})
-    for client in clients:
-        client.add(msg)
-
-myWorld.add_set_listener(set_listener)
-
 
 @app.route('/')
 def hello():
@@ -90,7 +88,6 @@ def hello():
     perhaps redirect to /static/index.html
     '''
     return redirect('/static/index.html', code=302)
-
 
 def read_ws(ws, client):
     '''A greenlet function that reads from the websocket, updates the world'''
@@ -114,6 +111,7 @@ def subscribe_socket(ws):
     '''
     client = Client()
     clients.append(client)
+    myWorld.add_set_listener(client)
     event = gevent.spawn(read_ws, ws, client)
 
     try:

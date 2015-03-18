@@ -37,6 +37,7 @@ var wscounter = 0;
 var socket;
 
 function debug(str) {
+    return;
     var debugDiv = document.getElementById('debug');
     debugDiv.innerHTML = "" + str;
 }
@@ -254,6 +255,7 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 
 function update() {
     drawFrame();
+    drawNextFrame();
 }
 
 
