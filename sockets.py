@@ -89,7 +89,7 @@ def hello():
 
     perhaps redirect to /static/index.html
     '''
-    return redirect('/static/index.html')
+    return redirect('/static/index.html', code=302)
 
 
 def read_ws(ws, client):
@@ -99,7 +99,7 @@ def read_ws(ws, client):
         if data is not None:
             json_data = json.loads(data)
             for key in json_data:
-                myWorld.set(key, json_data[key])
+		myWorld.set(key, json_data[key])
         else:
             break
 
@@ -119,8 +119,8 @@ def subscribe_socket(ws):
     try:
         while True:
             ws.send(client.get())
-    except:
-        pass
+    except Exception as e:
+        print "Socket Error %s" % e
     finally:
         clients.remove(client)
         gevent.kill(event)
